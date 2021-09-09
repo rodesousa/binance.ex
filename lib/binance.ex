@@ -391,6 +391,43 @@ defmodule Binance do
   end
 
   @doc """
+  Creates a new OCO order on binance
+
+  Returns `{:ok, %{}}` or `{:error, reason}`.
+
+  In the case of a error on binance, for example with invalid parameters, `{:error, {:binance_error, %{code: code, msg: msg}}}` will be returned.
+
+  Please read https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#new-oco-trade to understand all the parameters
+  """
+  def create_oco_order(
+        symbol,
+        side,
+        quantity,
+        price,
+        stop_price,
+        stop_limit_price
+      ) do
+    arguments = %{
+      symbol: symbol,
+      side: side,
+      quantity: quantity,
+      timestamp: :os.system_time(:millisecond),
+      price: format_price(price),
+      stopPrice: format_price(stop_price),
+      stopLimitPrice: format_price(stop_limit_price),
+      stopLimitTimeInForce: "GTC"
+    }
+
+    case HTTPClient.signed_request_binance("/api/v3/order/oco", arguments, :post) do
+      {:ok, %{"code" => code, "msg" => msg}} ->
+        {:error, {:binance_error, %{code: code, msg: msg}}}
+
+      data ->
+        data
+    end
+  end
+
+  @doc """
   Creates a new **limit** **buy** order
 
   Symbol can be a binance symbol in the form of `"ETHBTC"` or `%Binance.TradePair{}`.
