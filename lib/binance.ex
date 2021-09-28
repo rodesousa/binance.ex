@@ -75,6 +75,9 @@ defmodule Binance do
            :get
          ) do
       {:ok, data} ->
+        data
+        |> IO.inspect()
+
         {:ok, Enum.map(data, &Binance.HistoricalTrade.new(&1))}
 
       {:error, err} ->
@@ -728,6 +731,30 @@ defmodule Binance do
 
     case HTTPClient.get_binance("/api/v3/order", arguments, secret_key, api_key) do
       {:ok, data} -> {:ok, Binance.Order.new(data)}
+      err -> err
+    end
+  end
+
+  @doc """
+  Get trades for a specific account and symbol.
+  
+  ## Examples
+
+      iex> account_trade_list("WABIUSDT", 10)
+      [%Binance.HistoricalTrade{}]
+  """
+  def account_trade_list(symbol, limit)
+  when is_binary(symbol) when is_integer(limit) do
+    api_key = Application.get_env(:binance, :api_key)
+    secret_key = Application.get_env(:binance, :secret_key)
+
+    arguments = %{
+      symbol: symbol,
+      limit: limit
+    }
+
+    case HTTPClient.get_binance("/api/v3/myTrades", arguments, secret_key, api_key) do
+      {:ok, data} -> {:ok, Enum.map(data, &Binance.HistoricalTrade.new(&1))}
       err -> err
     end
   end
