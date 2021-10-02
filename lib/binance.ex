@@ -115,6 +115,25 @@ defmodule Binance do
   end
 
   @doc """
+  Latest price for a symbol or symbols.
+
+  ## Example
+  ```
+  Binance.get_price("CHZUSDT")
+  {:ok, %{price: "0.29290000", symbol: "CHZUSDT"}}
+  ```
+  """
+  @spec get_price(String.t()) :: {:ok, map()} | {:error, String.t()}
+  def get_price(symbol) do
+    case HTTPClient.get_binance("/api/v3/ticker/price?symbol=#{symbol}") do
+      {:ok, data} -> {:ok, %{price: data["price"], symbol: data["symbol"]}}
+      err ->
+        err
+    end
+  end
+
+
+  @doc """
   Retrieves the current ticker information for the given trade pair.
 
   Symbol can be a binance symbol in the form of `"ETHBTC"` or `%Binance.TradePair{}`.
